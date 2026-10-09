@@ -1,0 +1,37 @@
+#!/bin/sh
+# Wii-Linux Utilities - wii-boot-path
+# Find the SD FAT path, mounting it if necessary
+#
+# Copyright (C) 2026 Techflash
+
+layout="$(wii-boot-layout)"
+if [ "$layout" = "legacy" ] && mountpoint -q /boot; then
+	echo "/boot"
+	exit 0
+elif [ "$layout" = "npll" ]; then
+	if mountpoint -q /boot/wii; then
+		echo "/boot/wii"
+		exit 0
+	elif [ -b /dev/mmcblk0p1 ] && [ "$(eval "$(blkid -o export /dev/mmcblk0p1)"; echo "$TYPE")" = "vfat" ]; then
+		target="$(eval "$(findmnt -nyP /dev/mmcblk0p1)"; echo "$TARGET")"
+		if [ "$target" != "" ]; then
+			echo "$target"
+			exit 0
+		fi
+
+		mkdir -p /boot/wii
+		mount -t vfat /dev/mmcblk0p1 /boot/wii || {
+			echo "Mount failed" >&2
+			exit 1
+		}
+
+		exit 0
+	else
+		echo "Cannot find SD FAT" >&2
+		exit 1
+	fi
+else
+	echo "Unknown layout \"$layout\"" >&2
+	exit 1
+fi
+

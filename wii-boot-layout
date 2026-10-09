@@ -1,0 +1,30 @@
+#!/bin/sh
+# Wii-Linux Utilities - wii-boot-layout
+# Checks which boot layout the system is using
+#
+# Copyright (C) 2026 Techflash
+
+if ! [ -f /var/lib/wii-linux/boot-layout ]; then
+	echo legacy
+	exit 0
+fi
+
+layout="$(cat /var/lib/wii-linux/boot-layout || true)"
+case "$layout" in
+	npll)
+		echo npll
+		exit 0
+		;;
+	legacy)
+		echo legacy
+		exit 0
+		;;
+	*)
+		echo "Unknown layout \"$layout\"" >&2
+		exit 1
+		;;
+esac
+
+
+
+
